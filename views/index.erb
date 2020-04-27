@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>WEAWWO</title>
+  <link rel="stylesheet" type="text/css" href="style.css" />
+  <link rel="icon" href="weawwo.ico">
+  <script>
+    var reloading;
+
+    function checkReloading() {
+      if (window.location.hash == "#autoreload") {
+        reloading = setTimeout("window.location.reload();", 5000);
+        document.getElementById("reloadCB").checked = true;
+      }
+    }
+
+    function toggleAutoRefresh(cb) {
+      if (cb.checked) {
+        window.location.replace("#autoreload");
+        reloading = setTimeout("window.location.reload();", 5000);
+      } else {
+        window.location.replace("#");
+        clearTimeout(reloading);
+      }
+    }
+
+    window.onload = checkReloading;
+  </script>
+</head>
+
+<body>
+  <% if !signed_in %>
+  <div class="login">
+    You have to <a class="btn btn-primary"
+      href="https://github.com/login/oauth/authorize?client_id=<%= client_id %>">Sign In with GitHub</a>
+    <br />
+    You must publicly be part of the <%= org %> org.
+  </div>
+  <% else %>
+  <div class="report">
+    In Progress: <span class="flag-report progress"><%= issues.select{|i| i[:status] == "progress" }.length %></span>
+    |
+    Open: <span class="flag-report open"><%= issues.select{|i| i[:status] == "open" }.length %></span>
+    |
+    Done: <span class="flag-report done"><%= issues.select{|i| i[:status] == "done" }.length %></span>
+    |
+    Total: <span><%= issues.length %></span>
+
+    <% issues.each do |item| %>
+    <div class="item-box">
+      <table>
+        <tr>
+          <td rowspan="2">
+            <div class="flag-status <%= item[:status] %>">
+              <% if item[:source] == "github" %>
+              <img src="github.png" />
+              <% elsif item[:source] == "jira" %>
+              <img src="jira.png" />
+              <% elsif item[:source] == "tracker" %>
+              <img src="tracker.png" />
+              <% else %>
+              <% end %>
+            </div>
+          </td>
+          <td>
+            <a target="_blank" rel="noopener noreferrer" href="<%= item[:link] %>">
+              <h1><%= item[:title] %></h1>
+            </a>
+          </td>
+          <td>
+            <h2><%= item[:assignee] %></h2>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <textarea rows="4"><%= item[:description] %></textarea>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <% end %>
+    <label class="container">Auto Refresh
+      <input type="checkbox" onclick="toggleAutoRefresh(this);" id="reloadCB">
+      <span class="checkmark"></span>
+    </label>
+  </div>
+  <% end %>
+
+  <div class="attribution">
+    Icon made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a
+      href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
+  </div>
+</body>
+
+</html>

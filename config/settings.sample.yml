@@ -1,0 +1,25 @@
+---
+  jira:
+    connection:
+      server: ""
+      username: ""
+      password: ""
+    label: ""
+    project: ""
+    assigneeCustomField: ""
+    states:
+      progress: ["IN PROGRESS", "DOCUMENTATION", "REVIEW"]
+      done: ["REJECTED", "CLOSED", "RESOLVED", "DONE"]
+  github: 
+    access_token: ""
+    project: ""
+    label: ""
+    default_assignee: ""
+  tracker:
+    access_token: ""
+    project: 0
+    label: ""
+  github_auth:
+    client_id: ""
+    client_secret: ""
+    required_org: ""
