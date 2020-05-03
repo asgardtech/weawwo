@@ -25,8 +25,16 @@
       }
     }
 
+    function sort(element) {
+      var url = new URL(window.location)
+      url.searchParams.set("sort", element.id)
+      url.searchParams.set("desc", element.classList.contains("fa-chevron-up"))
+      window.location.replace(url)
+    }
+
     window.onload = checkReloading;
   </script>
+  <script src="https://kit.fontawesome.com/dacdf7760f.js" crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -43,49 +51,56 @@
     |
     Open: <span class="flag-report open"><%= issues.select{|i| i[:status] == "open" }.length %></span>
     |
-    Done: <span class="flag-report done"><%= issues.select{|i| i[:status] == "done" }.length %></span>
-    |
     Total: <span><%= issues.length %></span>
+  </div>
 
-    <% issues.each do |item| %>
-    <div class="item-box">
-      <table>
-        <tr>
-          <td rowspan="2">
-            <div class="flag-status <%= item[:status] %>">
-              <% if item[:source] == "github" %>
-              <img src="github.png" />
-              <% elsif item[:source] == "jira" %>
-              <img src="jira.png" />
-              <% elsif item[:source] == "tracker" %>
-              <img src="tracker.png" />
-              <% else %>
-              <% end %>
-            </div>
-          </td>
-          <td>
-            <a target="_blank" rel="noopener noreferrer" href="<%= item[:link] %>">
-              <h1><%= item[:title] %></h1>
-            </a>
-          </td>
-          <td>
-            <h2><%= item[:assignee] %></h2>
-          </td>
-        </tr>
-        <tr>
-          <td colspan="2">
-            <textarea rows="4"><%= item[:description] %></textarea>
-          </td>
-        </tr>
-      </table>
+  <div class="item-box">
+
+    <div class="item">
+      <div class="sort">
+        <span id="sort-status" class="fas <%= sort_by == :status ? (sort_desc ? 'fa-chevron-down' : 'fa-chevron-up') : 'fa-minus' %>" onclick="sort(this)"></span>
+      </div>
+      <div class="sort">
+        <span id="sort-source" class="fas <%= sort_by == :source ? (sort_desc ? 'fa-chevron-down' : 'fa-chevron-up') : 'fa-minus' %>" onclick="sort(this)"></span>
+      </div>
+      <div class="sort title">
+        <span id="sort-title" class="fas <%= sort_by == :title ? (sort_desc ? 'fa-chevron-down' : 'fa-chevron-up') : 'fa-minus' %>" onclick="sort(this)"></span>
+      </div>
+      <div class="sort assignee">
+        <span id="sort-assignee" class="fas <%= sort_by == :assignee ? (sort_desc ? 'fa-chevron-down' : 'fa-chevron-up') : 'fa-minus' %>" onclick="sort(this)"></span>
+      </div>
     </div>
 
+    <% issues.each do |item| %>
+    <div class="item">
+      <div class="flag-status <%= item[:status] %>"></div>
+      <div class="flag-status">
+        <% if item[:source] == "github" %>
+        <img src="github.png" />
+        <% elsif item[:source] == "jira" %>
+        <img src="jira.png" />
+        <% elsif item[:source] == "tracker" %>
+        <img src="tracker.png" />
+        <% else %>
+        <% end %>
+      </div>
+      <div class="summary">
+        <a target="_blank" rel="noopener noreferrer" href="<%= item[:link] %>">
+          <%= item[:title] %>
+        </a>
+      </div>
+      <div class="author">
+        <%= item[:assignee] %>
+      </div>
+    </div>
     <% end %>
-    <label class="container">Auto Refresh
-      <input type="checkbox" onclick="toggleAutoRefresh(this);" id="reloadCB">
-      <span class="checkmark"></span>
-    </label>
   </div>
+
+  <label class="container">Auto Refresh
+    <input type="checkbox" onclick="toggleAutoRefresh(this);" id="reloadCB">
+    <span class="checkmark"></span>
+  </label>
+
   <% end %>
 
   <div class="attribution">

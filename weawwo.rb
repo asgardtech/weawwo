@@ -51,8 +51,20 @@ class WEAWWO < Sinatra::Base
         return authenticate!
       end
   
-      issues = [] + tracker + github + jira
-      erb :index, :locals => {:signed_in => true, :issues => issues.sort_by{|i| i[:status] }.reverse }
+      sort_by = params[:sort] ? params[:sort].sub('sort-', '').to_sym : :status
+      sort_desc = params[:desc] ? params[:desc] == 'true' : false
+
+      issues = ([] + tracker + github + jira).select{|i| i[:status] != 'done'}.sort_by{|i| i[sort_by].to_s.upcase.strip }
+      if sort_desc 
+        issues.reverse!
+      end
+
+      erb :index, :locals => {
+        :signed_in => true, 
+        :issues => issues,
+        :sort_by => sort_by,
+        :sort_desc => sort_desc,
+      }
     end
   end
   
@@ -108,7 +120,7 @@ class WEAWWO < Sinatra::Base
   def github()
     client = Octokit::Client.new(:access_token => Settings.github.access_token)
     client.auto_paginate = true
-    issues = client.issues(Settings.github.project, { :labels => Settings.github.label })
+    issues = client.issues(Settings.github.project, { :state => 'all', :labels => Settings.github.label })
   
     issues.map do |issue|
       state = "done"

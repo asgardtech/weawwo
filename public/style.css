@@ -1,7 +1,7 @@
 body {
   background-color: #403838;
-  font-family: Open Sans, open-sans, EmojiFontFace, helvetica, arial, sans-serif;
   text-align: center;
+  font-family: Open Sans, open-sans, EmojiFontFace, helvetica, arial, sans-serif;
 }
 
 .item-box {
@@ -9,46 +9,64 @@ body {
   border: 2px solid #2c2525;
   background-color: #2c2525;
   padding: 0.5em;
-  width: 40em;
-  height: 6em;
+  width: 80%;
   margin: 0 auto 1em auto;
   color: #f9cc6c;
   text-align: center;
+  max-width: 1000px;
 }
 
 .item-box img {
-  max-height: 30px;
-  max-width: 30px;
+  max-height: 1em;
+  max-width: 1em;
   vertical-align: middle;
   margin: 0 auto;
   padding: 0;
 }
 
+.item {
+  display: grid;
+  grid-template-columns: 2em 2em auto auto;
+  border-bottom: 1px solid #403838;
+}
+
+.sort {
+  text-align: center;
+}
+
+.sort span {
+  cursor: pointer;
+}
+
+.sort.title {
+  text-align: left;   
+}
+
+.sort.assignee {
+  text-align: right; 
+}
+
 .flag-status {
   border-radius: 0.2em;
   border: 2px solid #5b5353;
-  width: 3em;
-  height: 5em;
-  margin: 0;
-  padding: 0;
+  margin: 0.2em;
   text-align: center;
-  line-height: 5em;
+  line-height: 1em;
+  background-color: #c3b7b8;
+  display: inline-block;
 }
 
 .progress {
-  background-color: #f9cc6c;
+  background-color: #adda78;
 }
 
 .open {
   background-color: #ff8ca1;
 }
 
-.done {
-  background-color: #adda78;
-}
-
-.item-box h1 {
-  font-size: 0.8em;
+.summary {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 1em;
   margin: 0;
   text-align: left;
   text-overflow: ellipsis;
@@ -57,38 +75,24 @@ body {
   height: 1.5em;
   line-height: 1.5em;
   margin: 0;
-  padding-left: 1em;
-  width: 33em;
   vertical-align: middle;
+  padding-right: 1em;
+  padding-top: 0.2em;
 }
 
-.item-box h2 {
-  font-size: 0.7em;
+.author {
+  font-size: 0.8em;
   text-align: right;
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
   height: 1em;
   line-height: 1em;
-  width: 10em;
   margin: 1px;
   padding: 0;
   color: #72696a;
   vertical-align: middle;
   font-style: italic;
-}
-
-.item-box textarea {
-  font-size: 0.7em;
-  font-family: 'Courier New', Courier, monospace;
-  padding: 0.5em;
-  margin: 0;
-  text-align: left;
-  width: 49em;
-  resize: none;
-  background-color: #403838;
-  color: #f9cc6c;
-  border: none;
 }
 
 a:link {
@@ -137,6 +141,7 @@ table {
 
 tr,
 td {
+  border: 1px solid magenta;
   padding: 0;
   margin: 0;
   line-height: 1em;
