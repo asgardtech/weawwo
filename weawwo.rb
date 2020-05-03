@@ -54,8 +54,9 @@ class WEAWWO < Sinatra::Base
       sort_by = params[:sort] ? params[:sort].sub('sort-', '').to_sym : :status
       sort_desc = params[:desc] ? params[:desc] == 'true' : false
 
-      issues = ([] + tracker + github + jira).select{|i| i[:status] != 'done'}.sort_by{|i| i[sort_by].to_s.upcase.strip }
-      if sort_desc 
+      issues = Parallel.map([:tracker, :github, :jira], in_threads: 3) { |p| method(p).call }.flatten
+      issues = issues.select{|i| i[:status] != 'done'}.sort_by{|i| i[sort_by].to_s.upcase.strip }
+      if sort_desc
         issues.reverse!
       end
 
