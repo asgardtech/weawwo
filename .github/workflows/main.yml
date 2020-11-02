@@ -30,5 +30,7 @@ jobs:
           CF_API: "https://api.cap.explore.suse.dev"
           CF_TARGET_ORG: viovanov
           CF_TARGET_SPACE: dev
+          CF_USERNAME: ${{ secrets.CF_USER }}
+          CF_PASSWORD: ${{ secrets.CF_PASSWORD }}
         with:
           args: push weawwo  
