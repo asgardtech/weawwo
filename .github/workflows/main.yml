@@ -1,0 +1,34 @@
+# This is a workflow to push to Cloud Foundry on merging to master
+
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Read configuration
+        uses: hashicorp/vault-action@v2.0.1
+        with:
+          url: https://volt.cap.explore.suse.dev/
+          token: ${{ secrets.VAULT_TOKEN }}
+          exportEnv: false
+          secrets: |
+            secret/data/weawwo "config_file"     | CONFIG_FILE
+      - name: Config file
+        run: |
+          echo "${CONFIG_FILE}" > config/settings.yml
+
+      - name: Deploy on SUSE Cloud Foundry Sandbox
+        uses: d3sandoval/cloud-foundry-action@1.1.1
+        env:
+          CF_API: "https://api.cap.explore.suse.dev"
+          CF_TARGET_ORG: viovanov
+          CF_TARGET_SPACE: dev
+        with:
+          args: push weawwo  
