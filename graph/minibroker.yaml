@@ -1,0 +1,11 @@
+---
+sources: []
+pipelines: []
+bosh_releases: []
+binaries: []
+images: []
+charts: []
+tarballs: []
+docs: []
+
+connections: {}

@@ -1,0 +1,36 @@
+---
+sources:
+- name: "KubeCF Sources"
+  url: "https://github.com/cloudfoundry-incubator/kubecf"
+  id: "sources_kubecf"
+- name: "Eirini Chart Sources"
+  url: ""
+  id: "sources_chart_eirini"
+- name: "Bits Sources"
+  url: ""
+  id: "sources_bits"
+- name: "PXC Sources"
+  url: ""
+  id: "sources_pxc"
+- name: "KubeCF Docs Sources"
+  url: "https://github.com/cloudfoundry-incubator/kubecf-docs"
+  id: "sources_docs_kubecf"
+- name: "PXC Chart Sources"
+  url: ""
+  id: "sources_chart_pxc"
+
+
+pipelines: []
+bosh_releases: []
+binaries: []
+images: []
+charts: []
+tarballs: []
+
+docs:
+- name: "KubeCF Docs"
+  url: "https://kubecf.suse.dev/"
+  id: "docs_kubecf"
+
+connections:
+  sources_docs_kubecf: docs_kubecf

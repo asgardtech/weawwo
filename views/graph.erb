@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>HAWBE</title>
+    <link rel="stylesheet" type="text/css" href="style.css?t=20200503" />
+</head>
+
+<body>
+    <script src="//d3js.org/d3.v5.min.js"></script>
+    <script src="https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js"></script>
+    <script src="https://unpkg.com/d3-graphviz@3.0.5/build/d3-graphviz.js"></script>
+    
+    <a href="/">weawwo</a> | <a href="/graph"><u>hawbe</u></a>
+    <hr />
+
+    <div id="graph" style="text-align: center;"></div>
+    <script>
+        function renderCAPGraph(file) {
+            var rawFile = new XMLHttpRequest();
+            rawFile.open("GET", file, false);
+            rawFile.onreadystatechange = function () {
+                if (rawFile.readyState === 4) {
+                    if (rawFile.status === 200 || rawFile.status == 0) {
+                        var allText = rawFile.responseText;
+                        d3.select("#graph").graphviz()
+                            .addImage("github.png", "40px", "40px")
+                            .addImage("moby.png", "40px", "40px")
+                            .addImage("helm.png", "40px", "40px")
+                            .addImage("tarball.png", "40px", "40px")
+                            .addImage("yaml.png", "40px", "40px")
+                            .renderDot(allText);
+                    }
+                }
+            }
+            rawFile.send(null);
+        }
+
+        renderCAPGraph("nodes");
+    </script>
+</body>
+
+</html>

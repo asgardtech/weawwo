@@ -4,6 +4,8 @@ require 'octokit'
 require 'jira-ruby'
 require 'tracker_api'
 require 'rest-client'
+require 'awesome_print'
+require './hawbe.rb'
 
 class WEAWWO < Sinatra::Base
   set :root, File.dirname(__FILE__)
@@ -85,88 +87,207 @@ class WEAWWO < Sinatra::Base
     redirect '/'
   end
   
-  def jira()
-    options = {
-      :username     => Settings.jira.connection.username,
-      :password     => Settings.jira.connection.password,
-      :site         => Settings.jira.connection.server,
-      :context_path => '',
-      :auth_type    => :basic
-    }
-  
-    client = JIRA::Client.new(options)
-    issues = client.Issue.jql("PROJECT = \"#{Settings.jira.project}\" AND labels = \"#{Settings.jira.label}\"")
-  
-    issues.map do |issue|
-      state = "open"
-      if Settings.jira.states.progress.map{|s| s.upcase }.include?(issue.status.name.upcase)
-        state = "progress"
+  get '/graph' do
+    if !authenticated?
+      authenticate!
+    else
+      access_token = session[:access_token]
+      scopes = []
+      begin
+        auth_result = RestClient.get('https://api.github.com/user',
+          {
+            :params => {:access_token => access_token},
+            :accept => :json
+          })
+        
+        auth_result = JSON.parse(auth_result)
+
+        auth_result['orgs'] = JSON.parse(RestClient.get(auth_result['organizations_url'],
+          {:params => {:access_token => access_token},
+          :accept => :json}))
+
+        unless auth_result['orgs'].any? do |o| 
+          o != nil && o['login'] != nil && o['login'].upcase == Settings.github_auth.required_org
+        end
+          raise "user not part of #{Settings.github_auth.required_org}"
+        end
+      rescue => e
+        # request didn't succeed because the token was revoked so we
+        # invalidate the token stored in the session and render the
+        # index page so that the user can start the OAuth flow again
+        puts e
+        session[:access_token] = nil
+        return authenticate!
       end
-      
-      if Settings.jira.states.done.map{|s| s.upcase }.include?(issue.status.name.upcase)
-        state = "done"
-      end
   
-      {
-        :title => issue.summary,
-        :description => issue.description,
-        :status => state,
-        :link => "#{Settings.jira.connection.server}/browse/#{issue.key}",
-        :source => "jira",
-        :assignee => issue.fields[Settings.jira.assigneeCustomField] ? issue.fields[Settings.jira.assigneeCustomField]["displayName"] : "",
+      erb :graph, :locals => {
       }
+    end
+  end
+
+  get '/nodes' do
+    # if !authenticated?
+    #   #authenticate!
+    # else
+    #   access_token = session[:access_token]
+    #   scopes = []
+    #   begin
+    #     auth_result = RestClient.get('https://api.github.com/user',
+    #       {
+    #         :params => {:access_token => access_token},
+    #         :accept => :json
+    #       })
+        
+    #     auth_result = JSON.parse(auth_result)
+
+    #     auth_result['orgs'] = JSON.parse(RestClient.get(auth_result['organizations_url'],
+    #       {:params => {:access_token => access_token},
+    #       :accept => :json}))
+
+    #     unless auth_result['orgs'].any? do |o| 
+    #       o != nil && o['login'] != nil && o['login'].upcase == Settings.github_auth.required_org
+    #     end
+    #       raise "user not part of #{Settings.github_auth.required_org}"
+    #     end
+    #   rescue => e
+    #     # request didn't succeed because the token was revoked so we
+    #     # invalidate the token stored in the session and render the
+    #     # index page so that the user can start the OAuth flow again
+    #     puts e
+    #     session[:access_token] = nil
+    #     return authenticate!
+    #   end
+  
+    #   erb :nodes, :locals => nodes()
+    # end
+        
+    erb :nodes, :locals => nodes()
+  end
+
+  def jira()
+    begin
+      options = {
+        :username     => Settings.jira.connection.username,
+        :password     => Settings.jira.connection.password,
+        :site         => Settings.jira.connection.server,
+        :context_path => '',
+        :auth_type    => :basic
+      }
+    
+      client = JIRA::Client.new(options)
+      issues = client.Issue.jql("PROJECT = \"#{Settings.jira.project}\" AND labels = \"#{Settings.jira.label}\"")
+    
+      issues.map do |issue|
+        state = "open"
+        if Settings.jira.states.progress.map{|s| s.upcase }.include?(issue.status.name.upcase)
+          state = "progress"
+        end
+        
+        if Settings.jira.states.done.map{|s| s.upcase }.include?(issue.status.name.upcase)
+          state = "done"
+        end
+    
+        {
+          :title => issue.summary,
+          :description => issue.description,
+          :status => state,
+          :link => "#{Settings.jira.connection.server}/browse/#{issue.key}",
+          :source => "jira",
+          :assignee => issue.fields[Settings.jira.assigneeCustomField] ? issue.fields[Settings.jira.assigneeCustomField]["displayName"] : "",
+        }
+      end
+    rescue JIRA::HTTPError => jex
+      ap jex
+      [{ 
+        :title => "There was an error calling Jira via http; code: '#{jex.code}' response: '#{jex.response}'", 
+        :status => "open", 
+        :link => "", 
+        :source => "jira", 
+        :assignees => "" 
+      }]
+    rescue => ex
+      ap ex
+      [{ 
+        :title => "There's a problem with Jira: #{ex.message}", 
+        :status => "open", 
+        :link => "", 
+        :source => "jira", 
+        :assignees => "" 
+      }]
     end
   end
   
   def github()
-    client = Octokit::Client.new(:access_token => Settings.github.access_token)
-    client.auto_paginate = true
-    issues = client.issues(Settings.github.project, { :state => 'all', :labels => Settings.github.label })
-  
-    issues.map do |issue|
-      state = "done"
-      if issue.state == "open" 
-        state = "open"
-  
-        if (issue.assignee != nil && (issue.assignees.length > 1 || (issue.assignee.login != "#{ Settings.github.default_assignee }")))
-          state = "progress"
+    begin
+      client = Octokit::Client.new(:access_token => Settings.github.access_token)
+      client.auto_paginate = true
+      issues = client.issues(Settings.github.project, { :state => 'all', :labels => Settings.github.label })
+    
+      issues.map do |issue|
+        state = "done"
+        if issue.state == "open" 
+          state = "open"
+    
+          if (issue.assignee != nil && (issue.assignees.length > 1 || (issue.assignee.login != "#{ Settings.github.default_assignee }")))
+            state = "progress"
+          end
         end
+        
+        {
+          :title => issue.title,
+          :description => issue.body,
+          :status => state,
+          :link => issue.html_url,
+          :source => "github",
+          :assignee => issue.assignee ? issue.assignee.login : "",
+        }
       end
-  
-      {
-        :title => issue.title,
-        :description => issue.body,
-        :status => state,
-        :link => issue.html_url,
-        :source => "github",
-        :assignee => issue.assignee ? issue.assignee.login : "",
-      }
+    rescue => ex
+      ap ex
+      [{ 
+        :title => "There's a problem with GitHub: #{ex.message}", 
+        :status => "open", 
+        :link => "", 
+        :source => "github", 
+        :assignees => "" 
+      }]
     end
   end
   
   def tracker()
-    client = TrackerApi::Client.new(token: Settings.tracker.access_token)
-    project  = client.project(Settings.tracker.project)
-    issues = project.stories(filter: "label:\"#{Settings.tracker.label}\"")
-  
-    issues.map do |issue|
-      state = "open"
-  
-      if ["started", "delivered", "finished", "accepted", "rejected"].include?(issue.current_state)
-        state = "progress"
+    begin
+      client = TrackerApi::Client.new(token: Settings.tracker.access_token)
+      project  = client.project(Settings.tracker.project)
+      issues = project.stories(filter: "label:\"#{Settings.tracker.label}\"")
+    
+      issues.map do |issue|
+        state = "open"
+    
+        if ["started", "delivered", "finished", "accepted", "rejected"].include?(issue.current_state)
+          state = "progress"
+        end
+        if issue.current_state == "accepted"
+          state = "done"
+        end 
+    
+        {
+          :title => issue.name,
+          :description => issue.description,
+          :status => state,
+          :link => issue.url,
+          :source => "tracker",
+          :assignee => issue.owners && issue.owners.length > 0 ? issue.owners[0].name : "",
+        }
       end
-      if issue.current_state == "accepted"
-        state = "done"
-      end 
-  
-      {
-        :title => issue.name,
-        :description => issue.description,
-        :status => state,
-        :link => issue.url,
-        :source => "tracker",
-        :assignee => issue.owners && issue.owners.length > 0 ? issue.owners[0].name : "",
-      }
+    rescue => ex
+      ap ex
+      [{ 
+        :title => "There's a problem with Tracker: #{ex.message}", 
+        :status => "open", 
+        :link => "", 
+        :source => "tracker", 
+        :assignees => "" 
+      }]
     end
   end
 end

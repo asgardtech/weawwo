@@ -1,0 +1,171 @@
+digraph {
+    ratio="fill";
+    size="10,10!";
+    margin="10,10";
+    bgcolor="#403838";
+    fontcolor="slategrey";
+    rankdir="LR";
+
+    graph [
+        fontname = "helvetica",
+        splines = "curve",
+    ];
+    
+    edge [
+        fontname = "helvetica"
+    ];
+    
+    node[
+        shape = "box",
+        fontname = "helvetica",
+        style="filled",
+        fillcolor = "#2c2525"
+        fontcolor="#f9cc6c";
+    ]
+
+// BEGIN COMMENT FOR HELPFUL LIST
+
+/*
+<% sources.each do |s| %>
+<%= s["id"] %>
+
+<% end %>
+<% bosh_releases.each do |s| %>
+<%= s["id"] %>
+
+<% end %>
+<% binaries.each do |s| %>
+<%= s["id"] %>
+
+<% end %>
+<% images.each do |s| %>
+<%= s["id"] %>
+
+<% end %>
+<% charts.each do |s| %>
+<%= s["id"] %>
+
+<% end %>
+<% tarballs.each do |s| %>
+<%= s["id"] %>
+
+<% end %>
+<% docs.each do |s| %>
+<%= s["id"] %>
+
+<% end %>
+<% pipelines.each do |s| %>
+<%= s["id"] %>
+
+<% end %>
+*/
+
+// END COMMENT FOR HELPFUL LIST
+
+<% sources.each do |s| %>
+    <%= s["id"] %> [
+        label=<<table border="0" cellborder="0">
+            <tr>
+              <td><img src="source.png" /></td>
+              <td><%= s["name"] %></td>
+            </tr>
+          </table>>
+        URL="<%= s["url"] %>"
+    ]
+<% end %>
+
+<% bosh_releases.each do |s| %>
+    <%= s["id"] %> [
+        label=<<table border="0" cellborder="0">
+            <tr>
+              <td><img src="bosh.png" /></td>
+              <td><%= s["name"] %></td>
+            </tr>
+          </table>>
+        URL="<%= s["url"] %>"
+    ]
+<% end %>
+
+<% binaries.each do |s| %>
+    <%= s["id"] %> [
+        label=<<table border="0" cellborder="0">
+            <tr>
+              <td><img src="binary.png" /></td>
+              <td><%= s["name"] %></td>
+            </tr>
+          </table>>
+        URL="<%= s["url"] %>"
+    ]
+<% end %>
+
+<% images.each do |s| %>
+    <%= s["id"] %> [
+        label=<<table border="0" cellborder="0">
+            <tr>
+              <td><img src="moby.png" /></td>
+              <td><%= s["name"] %></td>
+            </tr>
+          </table>>
+        URL="<%= s["url"] %>"
+    ]
+<% end %>
+
+<% charts.each do |s| %>
+    <%= s["id"] %> [
+        label=<<table border="0" cellborder="0">
+            <tr>
+              <td><img src="helm.png" /></td>
+              <td><%= s["name"] %></td>
+            </tr>
+          </table>>
+        URL="<%= s["url"] %>"
+    ]
+<% end %>
+
+<% tarballs.each do |s| %>
+    <%= s["id"] %> [
+        label=<<table border="0" cellborder="0">
+            <tr>
+              <td><img src="tarball.png" /></td>
+              <td><%= s["name"] %></td>
+            </tr>
+          </table>>
+        URL="<%= s["url"] %>"
+    ]
+<% end %>
+
+<% docs.each do |s| %>
+    <%= s["id"] %> [
+        label=<<table border="0" cellborder="0">
+            <tr>
+              <td><img src="doc.png" /></td>
+              <td><%= s["name"] %></td>
+            </tr>
+          </table>>
+        URL="<%= s["url"] %>"
+    ]
+<% end %>
+
+<% pipelines.each do |s| %>
+    <%= s["id"] %> [
+        label=<<table border="0" cellborder="0">
+            <tr>
+              <td><img src="pipeline.png" /></td>
+              <td><%= s["name"] %></td>
+            </tr>
+          </table>>
+        URL="<%= s["url"] %>"
+    ]
+<% end %>
+
+<% groups.each do |group, connections| %>
+    subgraph cluster_<%= group %> {
+      label = "<%= group %>";
+
+      <% connections.each do |to, from| %>
+      <%= to %> -> <%= from %>
+      <% end %>
+    }
+
+<% end %>
+}

@@ -147,6 +147,13 @@ td {
   line-height: 1em;
 }
 
+hr {
+  border-width: 0px;
+  height: 2px;
+  color: #f9cc6c;
+  background-color: #f9cc6c;
+}
+
 .report {
   font-family: 'Courier New', Courier, monospace;
   font-style: italic;
