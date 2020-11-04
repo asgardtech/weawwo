@@ -17,7 +17,6 @@ jobs:
         with:
           url: https://volt.cap.explore.suse.dev/
           token: ${{ secrets.VAULT_TOKEN }}
-          exportEnv: false
           secrets: |
             secret/data/weawwo "config_file"     | CONFIG_FILE
       - name: Config file
