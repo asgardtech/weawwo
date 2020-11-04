@@ -22,6 +22,7 @@ jobs:
       - name: Config file
         run: |
           echo "${CONFIG_FILE}" > config/settings.yml
+          cat config/settings.yml
 
       - name: Deploy on SUSE Cloud Foundry Sandbox
         uses: d3sandoval/cloud-foundry-action@1.1.1
